@@ -943,13 +943,55 @@
       .gate{align-items:stretch}.gateBtns{width:100%;display:grid;grid-template-columns:1fr 1fr}
       .choiceBtn{font-size:16px;min-height:52px;white-space:normal}
       :root{--barH:58px;--braceH:24px;--blankMin:56px;--blankMax:60px}
-      .modelWrap{min-height:470px;padding:10px 8px 22px;overflow:visible;align-items:flex-start}
+      .modelWrap{min-height:430px;padding:10px 8px 22px;overflow:visible;align-items:flex-start}
       .modelStage{width:100%;min-width:0;padding:48px 2px 126px;overflow:visible}
       .diffGrid{grid-template-columns:96px minmax(0,1fr);gap:14px 8px;min-width:0}
       .barsCol{min-width:0}
       .diffTopBrace{left:104px;right:6px;top:166px}
       .diffBottom{left:104px;right:6px;bottom:72px}
       .sumTotalBrace{bottom:72px}
+
+      /* Dedicated Part-Whole mobile geometry */
+      #modelSum{
+        position:relative;
+        min-height:350px;
+        padding:96px 6px 118px;
+      }
+      #modelSum .sumKnownBrace{
+        left:0;
+        width:22%;
+        top:56px;
+      }
+      #modelSum .sumUnknownBrace{
+        left:22%;
+        width:78%;
+        top:56px;
+      }
+      #modelSum .sumKnownBrace .labelTop,
+      #modelSum .sumUnknownBrace .labelTop{
+        top:-54px;
+      }
+      #modelSum .sumKnownBrace .blank{
+        min-width:58px;
+        max-width:64px;
+      }
+      #modelSum .sumUnknownBrace .qMark{
+        font-size:34px;
+        line-height:1;
+      }
+      #modelSum .sumBar{
+        width:100%;
+        margin:0;
+      }
+      #modelSum .sumTotalBrace{
+        left:0;
+        width:100%;
+        bottom:62px;
+      }
+      #modelSum .sumTotalBrace .labelBot{
+        top:30px;
+      }
+
       .slot{height:46px;font-size:13px;padding:0 4px;min-width:0}
       .chip,.slot .chipInSlot{font-size:14px;padding:7px 9px;touch-action:manipulation}
       .slot .chipInSlot{max-width:100%;white-space:nowrap}
@@ -963,6 +1005,8 @@
       }
       .labelTop{top:-74px}
       .labelBot{top:30px}
+      #modelSum .labelTop{max-width:none}
+      #modelSum .labelBot{max-width:none}
       .labelTop .blank,.labelBot .blank{
         position:relative;
         z-index:13;

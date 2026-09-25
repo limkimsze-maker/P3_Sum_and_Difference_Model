@@ -902,7 +902,11 @@
       .main.toolsHidden .question{font-size:clamp(36px,3.3vw,54px)}
     }
     @media (max-width:760px){
-      body{overflow:auto}.app{min-height:100dvh;height:auto;overflow:visible}
+      html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+      .wrap{height:auto;min-height:100dvh;display:block}
+      .app{height:auto;min-height:100dvh;overflow:visible;display:block}
+      .main{overflow:visible;min-height:0;flex:none}
+      .bd{overflow:visible;min-height:0}
       .topbar{padding:10px 12px;align-items:flex-start;flex-direction:column}
       .title h1{font-size:23px}.title .sub{font-size:14px}
       .controls{width:100%;justify-content:flex-start}.seg{max-width:100%;overflow-x:auto}

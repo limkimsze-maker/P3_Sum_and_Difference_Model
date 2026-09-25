@@ -982,6 +982,22 @@
       .modelCheckRow{align-items:stretch}.modelCheckRow>div:last-child{width:100%}#btnCheckModel{width:100%;min-height:50px}
       .opBank{justify-content:center}.equation-step-note{width:100%;justify-content:center}
       .eq{font-size:23px;overflow-x:auto;justify-content:flex-start;padding:8px;max-width:100%}
+      .eq.locked{
+        min-height:82px;
+        overflow:hidden;
+        white-space:normal;
+      }
+      .eq.locked::after{
+        content:"Check the model first.";
+        white-space:normal;
+        overflow-wrap:anywhere;
+        word-break:normal;
+        line-height:1.25;
+        font-size:18px;
+        padding:12px 14px;
+        box-sizing:border-box;
+        max-width:100%;
+      }
       .result{font-size:21px;white-space:normal;max-width:100%;overflow-wrap:anywhere}
       .answerActions{width:100%;padding:4px 0 8px}
       .answerBtn{width:100%;min-width:0;min-height:58px;font-size:20px}

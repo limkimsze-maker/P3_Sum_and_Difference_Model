@@ -722,6 +722,25 @@
     .msg.good{ border-color:rgba(22,163,74,.35); background:#ecfdf3; display:block; }
     .msg.bad{ border-color:rgba(225,29,72,.30); background:#fff1f2; display:block; }
 
+    .answerActions{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
+      padding:4px 0;
+    }
+    .answerBtn{
+      min-width:220px;
+      min-height:54px;
+      font-size:18px;
+      font-weight:1000;
+    }
+    .answerBtn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
     /* Tools */
     .mini{ font-size:11px; color:var(--muted); font-weight:900; }
     .timerRow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
@@ -964,6 +983,8 @@
       .opBank{justify-content:center}.equation-step-note{width:100%;justify-content:center}
       .eq{font-size:23px;overflow-x:auto;justify-content:flex-start;padding:8px;max-width:100%}
       .result{font-size:21px;white-space:normal;max-width:100%;overflow-wrap:anywhere}
+      .answerActions{width:100%;padding:4px 0 8px}
+      .answerBtn{width:100%;min-width:0;min-height:58px;font-size:20px}
       .msg{font-size:18px;max-width:100%;overflow-wrap:anywhere}
       .footer{font-size:12px}#toolsCard{margin-top:10px}
 
@@ -1181,6 +1202,11 @@
 
           <div class="eq locked" id="eqLine"></div>
           <div class="result locked" id="finalLine"></div>
+
+          <div class="answerActions" id="answerActions">
+            <button class="btn primary answerBtn" id="btnCheckAnswer" type="button" disabled>Check Answer</button>
+            <button class="btn good answerBtn" id="btnNextQuestion" type="button" style="display:none;">Next Question →</button>
+          </div>
 
           <div id="msg" class="msg"></div>
         </div>
@@ -1532,6 +1558,8 @@
   function lockEquation(lock){
     eqLine.classList.toggle("locked", !!lock);
     finalLine.classList.toggle("locked", !!lock);
+    const bottomCheck=document.getElementById("btnCheckAnswer");
+    if(bottomCheck) bottomCheck.disabled=!!lock;
   }
 
   function setModelOverlay(show){
@@ -2006,6 +2034,14 @@
     resetScore();
     resetTimer();
 
+    const bottomCheck=document.getElementById("btnCheckAnswer");
+    const nextBtn=document.getElementById("btnNextQuestion");
+    if(bottomCheck){
+      bottomCheck.style.display="";
+      bottomCheck.disabled=true;
+    }
+    if(nextBtn) nextBtn.style.display="none";
+
     let kind="diff";
     if(state.family==="sum") kind="sum";
     else if(state.family==="diff") kind="diff";
@@ -2122,6 +2158,11 @@
       playSound("correct");
       fireConfetti();
       pushToXAPI(1, feedback(true));
+
+      const bottomCheck=document.getElementById("btnCheckAnswer");
+      const nextBtn=document.getElementById("btnNextQuestion");
+      if(bottomCheck) bottomCheck.style.display="none";
+      if(nextBtn) nextBtn.style.display="";
     }else{
       setScore(false);
       showMsg("Not quite. Check your equation and final answer.","bad");
@@ -2180,6 +2221,11 @@
 
   document.getElementById("btnNew").addEventListener("click", newQuestion);
   document.getElementById("btnCheck").addEventListener("click", check);
+  document.getElementById("btnCheckAnswer").addEventListener("click", check);
+  document.getElementById("btnNextQuestion").addEventListener("click", ()=>{
+    newQuestion();
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
 
   document.getElementById("btnUnlock").addEventListener("click", unlockSound);
   document.getElementById("btnTestCorrect").addEventListener("click", ()=>playSound("correct"));

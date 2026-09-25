@@ -2095,6 +2095,12 @@
     resetScore();
     resetTimer();
 
+    // Start every question with a fresh Working Space.
+    if(typeof strokes !== "undefined"){
+      strokes.length = 0;
+      redrawWork();
+    }
+
     const bottomCheck=document.getElementById("btnCheckAnswer");
     const nextBtn=document.getElementById("btnNextQuestion");
     if(bottomCheck){

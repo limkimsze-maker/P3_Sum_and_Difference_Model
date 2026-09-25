@@ -935,12 +935,30 @@
       .chip,.slot .chipInSlot{font-size:14px;padding:7px 9px;touch-action:manipulation}
       .slot .chipInSlot{max-width:100%;white-space:nowrap}
       .slot,.opChip,.opSlot{touch-action:manipulation}
-      .labelTop,.labelBot{white-space:nowrap;z-index:4;max-width:calc(100vw - 36px)}
+      .diffTopBrace,.sumKnownBrace,.sumUnknownBrace,.sumTotalBrace,.diffBottom{z-index:10}
+      .labelTop,.labelBot{
+        white-space:nowrap;
+        z-index:12;
+        max-width:calc(100vw - 36px);
+        pointer-events:auto;
+      }
       .labelTop{top:-74px}
       .labelBot{top:30px}
+      .labelTop .blank,.labelBot .blank{
+        position:relative;
+        z-index:13;
+        pointer-events:auto;
+      }
+      .labelTop .blank input,.labelBot .blank input{
+        position:relative;
+        z-index:14;
+        pointer-events:auto;
+        touch-action:manipulation;
+      }
       .blank{min-height:44px}
       .blank input{font-size:18px;padding:5px 3px}
-      .labelBank{margin-bottom:64px;position:relative;z-index:6}
+      .labelBank{margin-bottom:64px;position:relative;z-index:6;pointer-events:none}
+      .labelBank .chip,.labelBank .mini{pointer-events:auto}
       .labelBank .mini{width:100%;line-height:1.25;order:-1;margin-bottom:4px;overflow-wrap:anywhere}
       .modelCheckRow{align-items:stretch}.modelCheckRow>div:last-child{width:100%}#btnCheckModel{width:100%;min-height:50px}
       .opBank{justify-content:center}.equation-step-note{width:100%;justify-content:center}
@@ -1057,7 +1075,7 @@
                   <span class="mini">Tap a label, then tap a left box. You can also drag.</span>
                 </div>
 
-                <div class="braceSpan diffTopBrace" aria-hidden="true">
+                <div class="braceSpan diffTopBrace">
                   <svg viewBox="0 0 100 24" preserveAspectRatio="none">
                     <path d="M4 18 C4 10 6 6 12 6 L45 6 C47 6 48.5 6 50 2 C51.5 6 53 6 55 6 L88 6 C94 6 96 10 96 18"/>
                   </svg>
@@ -1109,7 +1127,7 @@
 
               <!-- SUM MODEL (Part-Whole) -->
               <div id="modelSum" style="display:none;">
-                <div class="braceSpan sumKnownBrace" aria-hidden="true">
+                <div class="braceSpan sumKnownBrace">
                   <svg viewBox="0 0 100 24" preserveAspectRatio="none">
                     <path d="M4 18 C4 10 6 6 12 6 L45 6 C47 6 48.5 6 50 2 C51.5 6 53 6 55 6 L88 6 C94 6 96 10 96 18"/>
                   </svg>
@@ -1129,7 +1147,7 @@
                   <div class="sumDivider"></div>
                 </div>
 
-                <div class="braceSpan sumTotalBrace" aria-hidden="true">
+                <div class="braceSpan sumTotalBrace">
                   <svg viewBox="0 0 100 24" preserveAspectRatio="none">
                     <path d="M4 6 C4 14 6 18 12 18 L45 18 C47 18 48.5 18 50 22 C51.5 18 53 18 55 18 L88 18 C94 18 96 14 96 6"/>
                   </svg>

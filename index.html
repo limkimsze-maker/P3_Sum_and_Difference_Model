@@ -475,6 +475,13 @@
     }
     .chip:active{ cursor:grabbing; }
     .chip.placed{ opacity:.55; cursor:not-allowed; }
+    .chip.selected,.opChip.selected{
+      outline:4px solid rgba(45,143,213,.28);
+      outline-offset:2px;
+      background:#eaf7ff;
+      border-color:#2d8fd5;
+      transform:translateY(-1px);
+    }
 
     .barsCol{
       width:100%;
@@ -916,9 +923,18 @@
       .question{font-size:clamp(24px,7vw,32px)}.questionTitle{font-size:14px}
       .gate{align-items:stretch}.gateBtns{width:100%;display:grid;grid-template-columns:1fr 1fr}
       .choiceBtn{font-size:16px;min-height:52px;white-space:normal}
-      .modelWrap{min-height:320px;padding:10px}.modelStage{padding:48px 4px 58px}
-      .diffGrid{grid-template-columns:118px 1fr;gap:10px}.slot{height:46px;font-size:14px;padding:0 5px}
-      .chip,.slot .chipInSlot{font-size:14px;padding:6px 9px}.labelBank .mini{width:100%}
+      :root{--barH:58px;--braceH:24px;--blankMin:56px;--blankMax:60px}
+      .modelWrap{min-height:430px;padding:10px 6px 18px;overflow:visible;align-items:flex-start}
+      .modelStage{width:100%;min-width:0;padding:48px 4px 110px;overflow:visible}
+      .diffGrid{grid-template-columns:92px minmax(0,1fr);gap:12px 8px}
+      .diffTopBrace{left:100px;right:4px;top:120px}
+      .diffBottom{left:100px;right:4px;bottom:60px}
+      .sumTotalBrace{bottom:60px}
+      .slot{height:46px;font-size:13px;padding:0 4px}
+      .chip,.slot .chipInSlot{font-size:14px;padding:7px 10px;touch-action:manipulation}
+      .slot,.opChip,.opSlot{touch-action:manipulation}
+      .labelTop,.labelBot{white-space:nowrap;z-index:4}
+      .labelBank{margin-bottom:14px}.labelBank .mini{width:100%;line-height:1.25}
       .modelCheckRow{align-items:stretch}.modelCheckRow>div:last-child{width:100%}#btnCheckModel{width:100%;min-height:50px}
       .opBank{justify-content:center}.equation-step-note{width:100%;justify-content:center}
       .eq{font-size:23px;overflow-x:auto;justify-content:flex-start;padding:8px}.result{font-size:21px}.msg{font-size:18px}
@@ -1009,7 +1025,7 @@
                 <div class="labelBank" id="labelBank">
                   <div class="chip" id="chipGreater" draggable="true" data-label="greater">greater</div>
                   <div class="chip" id="chipSmaller" draggable="true" data-label="smaller">smaller</div>
-                  <span class="mini">Drag labels into the left boxes.</span>
+                  <span class="mini">Drag a label, or tap a label then tap a left box.</span>
                 </div>
 
                 <div class="braceSpan diffTopBrace" aria-hidden="true">
@@ -1275,6 +1291,10 @@
     modelChecked:false
   };
 
+  // Tap-to-place state for touch devices. Desktop drag/drop remains available.
+  let selectedLabel = null;
+  let selectedOp = null;
+
   /* ===========================
      ELEMENTS
   ============================ */
@@ -1454,6 +1474,8 @@
   function resetOps(){
     state.ops.op1=null;
     state.ops.eq=null;
+    selectedOp=null;
+    updateOpSelection();
   }
 
   function expectedModelKind(){
@@ -1485,11 +1507,29 @@
   }
 
   /* ===========================
-     DRAG: DIFFERENCE LABELS
+     DRAG / TAP: DIFFERENCE LABELS
   ============================ */
+  function updateLabelSelection(){
+    [chipGreater, chipSmaller].forEach(chip=>{
+      const active = selectedLabel === chip.dataset.label;
+      chip.classList.toggle("selected", active);
+      chip.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  function updateOpSelection(){
+    document.querySelectorAll(".opChip").forEach(chip=>{
+      const symbol = chip.dataset.op === "-" ? "−" : chip.dataset.op;
+      const active = selectedOp === symbol;
+      chip.classList.toggle("selected", active);
+      chip.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
   function resetLabelUI(){
     state.labels.top=null;
     state.labels.bottom=null;
+    selectedLabel=null;
 
     slotTop.classList.remove("filled");
     slotBottom.classList.remove("filled");
@@ -1502,6 +1542,7 @@
     chipSmaller.classList.remove("placed");
     chipGreater.setAttribute("draggable","true");
     chipSmaller.setAttribute("draggable","true");
+    updateLabelSelection();
   }
 
   function renderSlot(slotEl, label){
@@ -1534,18 +1575,34 @@
     chipSmaller.classList.toggle("placed", used.has("smaller"));
     chipGreater.setAttribute("draggable", used.has("greater") ? "false" : "true");
     chipSmaller.setAttribute("draggable", used.has("smaller") ? "false" : "true");
+    selectedLabel = null;
+    updateLabelSelection();
   }
 
   function wireLabelDrag(){
     [chipGreater, chipSmaller].forEach(chip=>{
+      if(chip.dataset.labelWired === "1") return;
+      chip.dataset.labelWired = "1";
+
       chip.addEventListener("dragstart",(e)=>{
         if(chip.classList.contains("placed")){ e.preventDefault(); return; }
         e.dataTransfer.setData("text/plain", chip.dataset.label);
         e.dataTransfer.effectAllowed="move";
       });
+
+      chip.addEventListener("click",(e)=>{
+        e.preventDefault();
+        if(chip.classList.contains("placed")) return;
+        const label = chip.dataset.label;
+        selectedLabel = (selectedLabel === label) ? null : label;
+        updateLabelSelection();
+      });
     });
 
     [slotTop, slotBottom].forEach(slot=>{
+      if(slot.dataset.labelSlotWired === "1") return;
+      slot.dataset.labelSlotWired = "1";
+
       slot.addEventListener("dragover",(e)=>{
         e.preventDefault();
         slot.classList.add("over");
@@ -1561,6 +1618,11 @@
       });
 
       slot.addEventListener("click",(e)=>{
+        if(selectedLabel){
+          applyLabelDrop(slot, selectedLabel);
+          return;
+        }
+
         const t = e.target;
         if(!(t && t.classList && t.classList.contains("chipInSlot"))) return;
         const slotKey = slot.dataset.slot;
@@ -1574,6 +1636,7 @@
         chipSmaller.classList.toggle("placed", used.has("smaller"));
         chipGreater.setAttribute("draggable", used.has("greater") ? "false" : "true");
         chipSmaller.setAttribute("draggable", used.has("smaller") ? "false" : "true");
+        updateLabelSelection();
       });
     });
   }
@@ -1627,23 +1690,43 @@
         const sym = e.dataTransfer.getData("text/plain");
         if(!["+", "−", "×", "÷", "="].includes(sym)) return;
         setSlot(slotEl, sym);
+        selectedOp = null;
+        updateOpSelection();
       });
 
-      slotEl.addEventListener("click", ()=>{
+      slotEl.addEventListener("click",(e)=>{
+        e.preventDefault();
+        if(selectedOp){
+          setSlot(slotEl, selectedOp);
+          selectedOp = null;
+          updateOpSelection();
+          return;
+        }
         if(slotEl.classList.contains("filled")) clearSlot(slotEl);
       });
     }
 
     chips.forEach(ch=>{
+      if(ch.dataset.opWired === "1") return;
+      ch.dataset.opWired = "1";
+
       ch.addEventListener("dragstart",(e)=>{
         const sym = ch.dataset.op === "-" ? "−" : ch.dataset.op;
         e.dataTransfer.setData("text/plain", sym);
         e.dataTransfer.effectAllowed="move";
       });
+
+      ch.addEventListener("click",(e)=>{
+        e.preventDefault();
+        const sym = ch.dataset.op === "-" ? "−" : ch.dataset.op;
+        selectedOp = (selectedOp === sym) ? null : sym;
+        updateOpSelection();
+      });
     });
 
     bindSlot(document.getElementById("op1"));
     bindSlot(document.getElementById("opEq"));
+    updateOpSelection();
   }
 
   /* ===========================

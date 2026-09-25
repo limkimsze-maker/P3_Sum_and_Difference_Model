@@ -924,21 +924,29 @@
       .gate{align-items:stretch}.gateBtns{width:100%;display:grid;grid-template-columns:1fr 1fr}
       .choiceBtn{font-size:16px;min-height:52px;white-space:normal}
       :root{--barH:58px;--braceH:24px;--blankMin:56px;--blankMax:60px}
-      .modelWrap{min-height:430px;padding:10px 6px 18px;overflow:visible;align-items:flex-start}
-      .modelStage{width:100%;min-width:0;padding:48px 4px 110px;overflow:visible}
-      .diffGrid{grid-template-columns:92px minmax(0,1fr);gap:12px 8px}
-      .diffTopBrace{left:100px;right:4px;top:158px}
-      .diffBottom{left:100px;right:4px;bottom:60px}
-      .sumTotalBrace{bottom:60px}
-      .slot{height:46px;font-size:13px;padding:0 4px}
-      .chip,.slot .chipInSlot{font-size:14px;padding:7px 10px;touch-action:manipulation}
+      .modelWrap{min-height:470px;padding:10px 8px 22px;overflow:visible;align-items:flex-start}
+      .modelStage{width:100%;min-width:0;padding:48px 2px 126px;overflow:visible}
+      .diffGrid{grid-template-columns:96px minmax(0,1fr);gap:14px 8px;min-width:0}
+      .barsCol{min-width:0}
+      .diffTopBrace{left:104px;right:6px;top:166px}
+      .diffBottom{left:104px;right:6px;bottom:72px}
+      .sumTotalBrace{bottom:72px}
+      .slot{height:46px;font-size:13px;padding:0 4px;min-width:0}
+      .chip,.slot .chipInSlot{font-size:14px;padding:7px 9px;touch-action:manipulation}
+      .slot .chipInSlot{max-width:100%;white-space:nowrap}
       .slot,.opChip,.opSlot{touch-action:manipulation}
-      .labelTop,.labelBot{white-space:nowrap;z-index:4}
-      .labelBank{margin-bottom:58px;position:relative;z-index:6}
-      .labelBank .mini{width:100%;line-height:1.25;order:-1;margin-bottom:2px}
+      .labelTop,.labelBot{white-space:nowrap;z-index:4;max-width:calc(100vw - 36px)}
+      .labelTop{top:-74px}
+      .labelBot{top:30px}
+      .blank{min-height:44px}
+      .blank input{font-size:18px;padding:5px 3px}
+      .labelBank{margin-bottom:64px;position:relative;z-index:6}
+      .labelBank .mini{width:100%;line-height:1.25;order:-1;margin-bottom:4px;overflow-wrap:anywhere}
       .modelCheckRow{align-items:stretch}.modelCheckRow>div:last-child{width:100%}#btnCheckModel{width:100%;min-height:50px}
       .opBank{justify-content:center}.equation-step-note{width:100%;justify-content:center}
-      .eq{font-size:23px;overflow-x:auto;justify-content:flex-start;padding:8px}.result{font-size:21px}.msg{font-size:18px}
+      .eq{font-size:23px;overflow-x:auto;justify-content:flex-start;padding:8px;max-width:100%}
+      .result{font-size:21px;white-space:normal;max-width:100%;overflow-wrap:anywhere}
+      .msg{font-size:18px;max-width:100%;overflow-wrap:anywhere}
       .footer{font-size:12px}#toolsCard{margin-top:10px}
 
       /* Pupil working space is always available on phones. */
@@ -954,7 +962,12 @@
       .main.toolsHidden #toolsCard .bd>p{display:none !important}
       .main.toolsHidden #toolsCard .workCard{margin:0;border-radius:18px}
       .main.toolsHidden #toolsCard .workHdr{padding:12px}
-      .main.toolsHidden #toolsCard canvas#workCanvas{height:230px}
+      .main.toolsHidden #toolsCard canvas#workCanvas{
+        height:230px;
+        display:block;
+        pointer-events:auto;
+        touch-action:none;
+      }
     }
 
     /* ✅ Confetti overlay canvas */
@@ -2170,11 +2183,7 @@
   btnToggleTools.addEventListener("click", ()=>{
     const hidden = !mainGrid.classList.contains("toolsHidden");
     setToolsHidden(hidden);
-
-    // ✅ FIX: when Tools become visible, canvas gains size — resize it
-    if(!hidden){
-      requestAnimationFrame(resizeCanvas);
-    }
+    if(typeof refreshWorkingCanvas === "function") refreshWorkingCanvas();
   });
 
   /* ===========================
@@ -2312,7 +2321,27 @@
     redrawWork();
   });
 
-  window.addEventListener("resize", resizeCanvas);
+  function refreshWorkingCanvas(){
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        if(!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        if(rect.width >= 2 && rect.height >= 2) resizeCanvas();
+      });
+    });
+  }
+
+  window.addEventListener("resize", refreshWorkingCanvas);
+  window.addEventListener("orientationchange", refreshWorkingCanvas);
+  window.addEventListener("load", refreshWorkingCanvas);
+
+  if(typeof ResizeObserver !== "undefined"){
+    const workResizeObserver = new ResizeObserver(()=>{
+      const rect = canvas.getBoundingClientRect();
+      if(rect.width >= 2 && rect.height >= 2) resizeCanvas();
+    });
+    workResizeObserver.observe(canvas);
+  }
 
   /* ===========================
      INIT
@@ -2328,12 +2357,8 @@
     setToolsHidden(true);
   }
 
-  // ✅ FIX: only resize working canvas when tools (and canvas) are visible
-  requestAnimationFrame(()=>{
-    if(!mainGrid.classList.contains("toolsHidden")){
-      resizeCanvas();
-    }
-  });
+  // The pupil working space is visible on mobile even when Teacher Tools are hidden.
+  refreshWorkingCanvas();
 
   // first question
   newQuestion();
